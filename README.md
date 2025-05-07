@@ -10,9 +10,9 @@ cargo run localhost:8080
 Use a client (like telnet) to send requests
 
 ### Available Requests
-**SET**: Add new key or update existing one
-**GET**: Get value from key if it exists
-**DEL**: Delete key
+- SET: Add new key or update existing one
+- GET: Get value from key if it exists
+- DEL: Delete key
 
 ### Example usage
 ```
