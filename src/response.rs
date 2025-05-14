@@ -48,7 +48,7 @@ impl From<String> for Response {
                     }
                 );
             },
-            "GET" | "DEL" => return Response::Ok(
+            "GET" | "DEL" | "GETALL" | "GETSW" | "GETEW" => return Response::Ok(
                 method.unwrap().to_string(),
                 key.unwrap().to_string(),
                 None,

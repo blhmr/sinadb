@@ -1,6 +1,5 @@
 use std::error::Error;
 use tokio::{io::{AsyncReadExt, AsyncWriteExt}, net::{TcpListener, TcpStream}};
-
 use crate::{database::Database, response::Response};
 
 pub async fn start_server(host: &str) -> Result<(), Box<dyn Error>> {
@@ -37,15 +36,64 @@ pub async fn handle_client(mut conn: TcpStream, database: &Database) -> Result<(
                 conn.write("OK\n".as_bytes()).await?;
             },
             "GET" => {
-                if let Some(result) = database.get(&key).await {
-                    conn.write((result + "\n").as_bytes()).await?;
+                if key == "*" {
+                    if let Some(values) = database.get_all().await {
+                        let mut response = String::new();
+                        for (key, value) in values.iter() {
+                            response.push_str(&format!("{} = {}\n", key, value));
+                        }
+                        conn.write(response.as_bytes()).await?;
+                    } else {
+                        conn.write("none\n".as_bytes()).await?;
+                    }
                 } else {
-                    conn.write("Key does not exist\n".as_bytes()).await?;
+                    if let Some(result) = database.get(&key).await {
+                        conn.write((result + "\n").as_bytes()).await?;
+                    } else {
+                        conn.write("Key does not exist\n".as_bytes()).await?;
+                    }
                 }
             }
             "DEL" => {
                 database.delete(&key).await;
                 conn.write("OK\n".as_bytes()).await?;
+            },
+            // "GETALL" => {
+            //     if let Some(values) = database.get_all().await {
+            //         let mut response = String::new();
+            //         for (key, value) in values.iter() {
+            //             response.push_str(&format!("{} = {}\n", key, value));
+            //         }
+            //         conn.write(response.as_bytes()).await?;
+            //     } else {
+            //         conn.write("Hashmap is empty".as_bytes()).await?;
+            //     }
+            // },
+            "GETSW" => {
+                let values = database.get_sw(&key).await;
+                if let Some(values) = values {
+                    let mut response = String::new();
+                    for (key, value) in values.iter() {
+                        response.push_str(&format!("{} = {}\n", key, value));
+                    }
+                    conn.write(response.as_bytes()).await?;
+                }
+                else {
+                    conn.write("No key starts with that pattern\n".as_bytes()).await?;
+                }
+            },
+            "GETEW" => {
+                let values = database.get_ew(&key).await;
+                if let Some(values) = values {
+                    let mut response = String::new();
+                    for (key, value) in values.iter() {
+                        response.push_str(&format!("{} = {}\n", key, value));
+                    }
+                    conn.write(response.as_bytes()).await?;
+                }
+                else {
+                    conn.write("No key ends with that pattern\n".as_bytes()).await?;
+                }
             },
             _ => (),
         }
