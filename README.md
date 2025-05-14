@@ -13,6 +13,8 @@ Use a client (like telnet) to send requests
 - SET: Add new key or update existing one
 - GET: Get value from key if it exists
 - DEL: Delete key
+- GETSW: Get all keys that starts with a pattern
+- GETEW: Get all keys that ends with a pattern
 
 ### Example usage
 ```
@@ -29,4 +31,6 @@ SET somekey somevalue 10 # Sets somekey for 10 seconds
 # Waiting for 10 seconds
 
 GET somekey # ERROR: somekey no longer lives in the cache
+
+GET * # Gets everything
 ```
